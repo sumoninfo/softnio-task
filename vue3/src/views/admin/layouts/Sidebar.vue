@@ -8,7 +8,12 @@
             Dashboard
           </router-link>
         </li>
-
+        <li class="nav-item">
+          <router-link :to="{name:'CategoryList'}" class="nav-link active">
+            <i class="fas fa-list"></i>
+              Category
+          </router-link>
+        </li>
       </ul>
     </div>
   </nav>

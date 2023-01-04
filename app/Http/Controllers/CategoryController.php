@@ -8,6 +8,7 @@ use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 
@@ -18,9 +19,13 @@ class CategoryController extends BaseController
      *
      * @return AnonymousResourceCollection
      */
-    public function index()
+    public function index(Request $request)
     {
-        return CategoryResource::collection(Category::all());
+        $query = Category::query();
+        if ($request->filled('search')) {
+            $query->where('name', 'LIKE', "%{$request->search}%");
+        }
+        return CategoryResource::collection($query->latest()->paginate($request->get('per_page', config('constant.pagination'))));
     }
 
     /**
@@ -33,7 +38,7 @@ class CategoryController extends BaseController
     {
         DB::beginTransaction();
         try {
-            $category = Category::create('title', $request->title);
+            $category = Category::create($request->all());
             DB::commit();
             return $this->returnResponse("success", "Created successfully", new CategoryResource($category));
         } catch (QueryException $e) {
@@ -67,7 +72,7 @@ class CategoryController extends BaseController
     {
         DB::beginTransaction();
         try {
-             $category->update(['title', $request->title]);
+             $category->update(['name', $request->name]);
             DB::commit();
             return $this->returnResponse("success", "Updated successfully", new CategoryResource($category));
         } catch (QueryException $e) {
